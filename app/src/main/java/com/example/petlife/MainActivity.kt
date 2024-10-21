@@ -1,6 +1,7 @@
 package com.example.petlife
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,7 +24,9 @@ class MainActivity : ComponentActivity() {
         size = "Médio",
         lastVetVisit = "02/08/2024",
         lastVaccination = "15/07/2024",
-        lastPetShopVisit = "20/09/2024"
+        lastPetShopVisit = "20/09/2024",
+        clinicPhone = "16998865982",
+        clinicWebsite = "https://www.petlove.com.br/"
     )
 
     private val editPetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -43,6 +46,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun dialClinic(phoneNumber: String) {
+        val intent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$phoneNumber")
+        }
+        startActivity(intent)
+    }
+
+    private fun openClinicWebsite(websiteUrl: String) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(websiteUrl)
+        }
+        startActivity(intent)
+    }
+
     @Composable
     fun PetDashboard(pet: Pet) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -54,11 +71,21 @@ class MainActivity : ComponentActivity() {
             Text(text = "Última ida ao veterinário: ${pet.lastVetVisit}")
             Text(text = "Última vacinação: ${pet.lastVaccination}")
             Text(text = "Última ida ao petshop: ${pet.lastPetShopVisit}")
+            Text(text = "Telefone do Consultório: ${pet.clinicPhone}")
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { editPetData(pet) }) {
                 Text("Editar Dados")
+            }
+
+            Button(onClick = { dialClinic(pet.clinicPhone) }) {
+                Text("Ligar para Consultório")
+            }
+
+            Text(text = "Site para Marcações de Consultas: ${pet.clinicWebsite}")
+            Button(onClick = { openClinicWebsite(pet.clinicWebsite) }) {
+                Text("Abrir Site")
             }
         }
     }
@@ -69,3 +96,5 @@ class MainActivity : ComponentActivity() {
         editPetLauncher.launch(intent)
     }
 }
+
+

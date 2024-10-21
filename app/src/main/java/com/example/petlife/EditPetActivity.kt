@@ -50,6 +50,8 @@ class EditPetActivity : ComponentActivity() {
         var updatedLastVetVisit by remember { mutableStateOf(pet.lastVetVisit) }
         var updatedLastVaccination by remember { mutableStateOf(pet.lastVaccination) }
         var updatedLastPetShopVisit by remember { mutableStateOf(pet.lastPetShopVisit) }
+        var updatedClinicPhone by remember { mutableStateOf(pet.clinicPhone) }
+        var updatedClinicWebsite by remember { mutableStateOf(pet.clinicWebsite) }
 
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Editar informações do Pet", style = MaterialTheme.typography.titleLarge)
@@ -118,6 +120,18 @@ class EditPetActivity : ComponentActivity() {
                 label = { Text("Última ida ao petshop") }
             )
 
+            TextField(
+                value = updatedClinicPhone,
+                onValueChange = { updatedClinicPhone = it },
+                label = { Text("Telefone do Consultório") }
+            )
+
+            TextField(
+                value = updatedClinicWebsite,
+                onValueChange = { updatedClinicWebsite = it },
+                label = { Text("Site para Marcações de Consultas") }
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = {
@@ -129,7 +143,9 @@ class EditPetActivity : ComponentActivity() {
                     size = updatedSize,
                     lastVetVisit = updatedLastVetVisit,
                     lastVaccination = updatedLastVaccination,
-                    lastPetShopVisit = updatedLastPetShopVisit
+                    lastPetShopVisit = updatedLastPetShopVisit,
+                    clinicPhone = updatedClinicPhone,
+                    clinicWebsite = updatedClinicWebsite
                 )
 
                 val resultIntent = Intent()
