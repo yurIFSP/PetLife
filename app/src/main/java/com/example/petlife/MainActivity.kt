@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
 
     private var pet = Pet(
-        name = "Rex",
+        name = "Buddy",
         birthDate = "01/01/2020",
         type = "Cão",
         color = "Marrom",
