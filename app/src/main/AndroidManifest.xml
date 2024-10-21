@@ -23,6 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".EditPetActivity"
+            android:exported="true"
+            android:label="Editar Pet" />
     </application>
 
 </manifest>
