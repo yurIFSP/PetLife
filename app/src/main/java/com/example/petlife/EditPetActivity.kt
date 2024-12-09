@@ -4,22 +4,25 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import android.util.Log
 
 class EditPetActivity : ComponentActivity() {
 
+    private lateinit var database: PetLifeDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        database = PetLifeDatabase(this)
 
         val pet: Pet? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("pet", Pet::class.java)
@@ -47,21 +50,20 @@ class EditPetActivity : ComponentActivity() {
         var updatedType by remember { mutableStateOf(pet.type) }
         var updatedColor by remember { mutableStateOf(pet.color) }
         var updatedSize by remember { mutableStateOf(pet.size) }
-        var updatedLastVetVisit by remember { mutableStateOf(pet.lastVetVisit) }
-        var updatedLastVaccination by remember { mutableStateOf(pet.lastVaccination) }
-        var updatedLastPetShopVisit by remember { mutableStateOf(pet.lastPetShopVisit) }
-        var updatedClinicPhone by remember { mutableStateOf(pet.clinicPhone) }
-        var updatedClinicWebsite by remember { mutableStateOf(pet.clinicWebsite) }
+
+        val petTypes = listOf("cão", "gato")
+        val petSizes = listOf("pequeno", "médio", "grande")
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Editar informações do Pet", style = MaterialTheme.typography.titleLarge)
+            Text("Editar informações do Pet", style = MaterialTheme.typography.titleLarge)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
                 value = updatedName,
                 onValueChange = { updatedName = it },
-                label = { Text("Nome") }
+                label = { Text("Nome") },
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -69,91 +71,101 @@ class EditPetActivity : ComponentActivity() {
             TextField(
                 value = updatedBirthDate,
                 onValueChange = { updatedBirthDate = it },
-                label = { Text("Data de Nascimento") }
+                label = { Text("Data de Nascimento") },
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = updatedType,
-                onValueChange = { updatedType = it },
-                label = { Text("Tipo") }
+            DropdownMenuField(
+                label = "Tipo",
+                options = petTypes,
+                selectedOption = updatedType,
+                onOptionSelected = { updatedType = it }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Campo de Cor
             TextField(
                 value = updatedColor,
                 onValueChange = { updatedColor = it },
-                label = { Text("Cor") }
+                label = { Text("Cor") },
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = updatedSize,
-                onValueChange = { updatedSize = it },
-                label = { Text("Porte") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextField(
-                value = updatedLastVetVisit,
-                onValueChange = { updatedLastVetVisit = it },
-                label = { Text("Última ida ao veterinário") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextField(
-                value = updatedLastVaccination,
-                onValueChange = { updatedLastVaccination = it },
-                label = { Text("Última vacinação") }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextField(
-                value = updatedLastPetShopVisit,
-                onValueChange = { updatedLastPetShopVisit = it },
-                label = { Text("Última ida ao petshop") }
-            )
-
-            TextField(
-                value = updatedClinicPhone,
-                onValueChange = { updatedClinicPhone = it },
-                label = { Text("Telefone do Consultório") }
-            )
-
-            TextField(
-                value = updatedClinicWebsite,
-                onValueChange = { updatedClinicWebsite = it },
-                label = { Text("Site para Marcações de Consultas") }
+            DropdownMenuField(
+                label = "Porte",
+                options = petSizes,
+                selectedOption = updatedSize,
+                onOptionSelected = { updatedSize = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = {
-                val updatedPet = pet.copy(
-                    name = updatedName,
-                    birthDate = updatedBirthDate,
-                    type = updatedType,
-                    color = updatedColor,
-                    size = updatedSize,
-                    lastVetVisit = updatedLastVetVisit,
-                    lastVaccination = updatedLastVaccination,
-                    lastPetShopVisit = updatedLastPetShopVisit,
-                    clinicPhone = updatedClinicPhone,
-                    clinicWebsite = updatedClinicWebsite
-                )
+            Button(
+                onClick = {
+                    val updatedPet = pet.copy(
+                        name = updatedName,
+                        birthDate = updatedBirthDate,
+                        type = updatedType,
+                        color = updatedColor,
+                        size = updatedSize
+                    )
 
-                val resultIntent = Intent()
-                resultIntent.putExtra("updatedPet", updatedPet)
-                setResult(Activity.RESULT_OK, resultIntent)
-                finish()
-            }) {
+                    val isUpdated = database.updatePet(updatedPet)
+
+                    if (isUpdated) {
+                        val resultIntent = Intent()
+                        resultIntent.putExtra("updatedPet", updatedPet)
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish()
+                    } else {
+                        Toast.makeText(this@EditPetActivity, "Erro ao salvar alterações", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("Salvar")
+            }
+        }
+    }
+
+    @Composable
+    fun DropdownMenuField(
+        label: String,
+        options: List<String>,
+        selectedOption: String,
+        onOptionSelected: (String) -> Unit
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = selectedOption,
+                onValueChange = {},
+                label = { Text(label) },
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = true }
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

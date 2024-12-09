@@ -22,7 +22,6 @@ class EventListActivity : ComponentActivity() {
 
         pet = intent.getParcelableExtra("pet") ?: throw IllegalArgumentException("Pet não encontrado")
 
-        // Exemplo de eventos (substituir por carregamento do banco de dados)
         eventList.addAll(
             listOf(
                 Event(petId = 1, eventType = "Veterinário", eventDate = "01/10/2024"),
@@ -113,6 +112,5 @@ class EventListActivity : ComponentActivity() {
 
     private fun removeEvent(event: Event) {
         eventList.remove(event)
-        // Também remova do banco de dados (futuro)
     }
 }

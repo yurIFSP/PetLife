@@ -11,9 +11,4 @@ data class Pet(
     val type: String,
     val color: String,
     val size: String,
-    val lastVetVisit: String,
-    val lastVaccination: String,
-    val lastPetShopVisit: String,
-    val clinicPhone: String,  // Requisito adicional
-    val clinicWebsite: String // Requisito adicional
 ) : Parcelable
