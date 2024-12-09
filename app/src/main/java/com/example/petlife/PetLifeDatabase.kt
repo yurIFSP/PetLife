@@ -31,6 +31,7 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                 eventCategory TEXT NOT NULL,
                 eventType TEXT NOT NULL,
                 eventDate TEXT NOT NULL,
+                time TEXT NOT NULL,
                 FOREIGN KEY(pet_id) REFERENCES pets(id) ON DELETE CASCADE
             )
             """
@@ -115,6 +116,7 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
             put("eventCategory", event.eventCategory)
             put("eventType", event.eventType)
             put("eventDate", event.eventDate)
+            put("time", event.time)
         }
         val id = db.insert("events", null, contentValues)
         db.close()
@@ -133,7 +135,8 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                     petId = cursor.getInt(cursor.getColumnIndexOrThrow("pet_id")),
                     eventCategory = cursor.getString(cursor.getColumnIndexOrThrow("eventCategory")),
                     eventType = cursor.getString(cursor.getColumnIndexOrThrow("eventType")),
-                    eventDate = cursor.getString(cursor.getColumnIndexOrThrow("eventDate"))
+                    eventDate = cursor.getString(cursor.getColumnIndexOrThrow("eventDate")),
+                    time = cursor.getString(cursor.getColumnIndexOrThrow("time"))
                 )
                 eventList.add(event)
             } while (cursor.moveToNext())
@@ -157,6 +160,7 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
             put("eventCategory", event.eventCategory)
             put("eventType", event.eventType)
             put("eventDate", event.eventDate)
+            put("time", event.time)
         }
         val rowsAffected = db.update("events", contentValues, "id = ?", arrayOf(event.id.toString()))
         db.close()
@@ -165,6 +169,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     companion object {
         const val DATABASE_NAME = "PetLife.db"
-        const val DATABASE_VERSION = 3
+        const val DATABASE_VERSION = 4
     }
 }

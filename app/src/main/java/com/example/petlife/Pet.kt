@@ -11,5 +11,5 @@ data class Pet(
     val type: String,
     val color: String,
     val size: String,
-    val events: List<Event> = emptyList()
+    val events: List<Event> = emptyList(),
 ) : Parcelable

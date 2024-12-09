@@ -9,5 +9,8 @@ data class Event(
     val petId: Int,
     val eventCategory: String,
     val eventType: String,
-    val eventDate: String
+    val eventDate: String,
+    val time: String
 ) : Parcelable
+
+

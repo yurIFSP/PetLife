@@ -121,6 +121,8 @@ class EventListActivity : ComponentActivity() {
                 Text(text = "Categoria: ${event.eventCategory}", style = MaterialTheme.typography.bodyLarge)
                 Text(text = "Descrição: ${event.eventType}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Data: ${event.eventDate}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Horario: ${event.time}", style = MaterialTheme.typography.bodyMedium)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween

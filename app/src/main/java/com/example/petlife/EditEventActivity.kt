@@ -28,10 +28,11 @@ class EditEventActivity : ComponentActivity() {
 
     @Composable
     fun EditEventScreen(event: Event?, petId: Int) {
-        val eventCategories = listOf("Vacinação", "Petshop", "Veterinário")
+        val eventCategories = listOf("Vacinação", "Petshop", "Veterinário", "Remédio")
         var selectedCategory by remember { mutableStateOf(event?.eventCategory ?: "") }
         var eventType by remember { mutableStateOf(event?.eventType ?: "") }
         var eventDate by remember { mutableStateOf(event?.eventDate ?: "") }
+        var time by remember { mutableStateOf(event?.time ?: "") }
 
         Column(modifier = Modifier.padding(16.dp)) {
             DropdownMenuField(
@@ -61,16 +62,28 @@ class EditEventActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            TextField(
+                value = time,
+                onValueChange = { time = it },
+                label = { Text("Horario") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
             Button(onClick = {
                 val newEvent = event?.copy(
                     eventCategory = selectedCategory,
                     eventType = eventType,
-                    eventDate = eventDate
+                    eventDate = eventDate,
+                    time = time
                 ) ?: Event(
                     petId = petId,
                     eventCategory = selectedCategory,
                     eventType = eventType,
-                    eventDate = eventDate
+                    eventDate = eventDate,
+                    time = time
                 )
 
                 val resultIntent = Intent()
@@ -122,7 +135,9 @@ class EditEventActivity : ComponentActivity() {
                         }
                     )
                 }
+
             }
+
         }
     }
 
