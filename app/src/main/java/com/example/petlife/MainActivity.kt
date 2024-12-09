@@ -18,15 +18,16 @@ class MainActivity : ComponentActivity() {
     private lateinit var database: PetLifeDatabase
     private var petList = mutableStateListOf<Pet>()
 
-    private val editPetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val updatedPet = result.data?.getParcelableExtra<Pet>("updatedPet")
-            if (updatedPet != null) {
-                database.updatePet(updatedPet)
-                loadPets()
+    private val editPetLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val updatedPet = result.data?.getParcelableExtra<Pet>("updatedPet")
+                if (updatedPet != null) {
+                    database.updatePet(updatedPet)
+                    loadPets()
+                }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +76,7 @@ class MainActivity : ComponentActivity() {
                                 val pet = petList[index]
                                 PetItem(
                                     pet = pet,
+                                    onItemClick = { navigateToEventList(pet) },
                                     onEdit = { editPetData(pet) },
                                     onDelete = { removePet(pet) }
                                 )
@@ -92,12 +94,17 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun PetItem(pet: Pet, onEdit: () -> Unit, onDelete: () -> Unit) {
+    fun PetItem(
+        pet: Pet,
+        onItemClick: () -> Unit,
+        onEdit: () -> Unit,
+        onDelete: () -> Unit
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-                .clickable {  },
+                .clickable { onItemClick() }, // Adicionado clique principal
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -121,6 +128,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun navigateToEventList(pet: Pet) {
+        val intent = Intent(this, EventListActivity::class.java).apply {
+            putExtra("pet", pet)
+        }
+        startActivity(intent)
+    }
+
     private fun editPetData(pet: Pet) {
         val intent = Intent(this, EditPetActivity::class.java)
         intent.putExtra("pet", pet)
@@ -138,8 +152,8 @@ class MainActivity : ComponentActivity() {
             name = "Novo Pet",
             birthDate = "01/01/2023",
             type = "cão",
-            color = "Preto",
-            size = "pequeno"
+            size = "pequeno",
+            color = "Preto"
         )
         database.insertPet(newPet)
         loadPets()

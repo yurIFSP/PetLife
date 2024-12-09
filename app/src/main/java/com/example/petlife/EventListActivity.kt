@@ -1,10 +1,11 @@
 package com.example.petlife
 
-
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -17,21 +18,47 @@ class EventListActivity : ComponentActivity() {
     private lateinit var pet: Pet
     private val eventList = mutableStateListOf<Event>()
 
+    private val addEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val newEvent = result.data?.getParcelableExtra<Event>("event")
+            if (newEvent != null) {
+                val database = PetLifeDatabase(this)
+                database.insertEvent(newEvent)
+                loadEvents()
+            }
+        }
+    }
+
+    private val editEventLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val updatedEvent = result.data?.getParcelableExtra<Event>("event")
+            if (updatedEvent != null) {
+                val database = PetLifeDatabase(this)
+                database.updateEvent(updatedEvent)
+                loadEvents()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        pet = intent.getParcelableExtra("pet") ?: throw IllegalArgumentException("Pet não encontrado")
+        pet = intent.getParcelableExtra("pet") ?: run {
+            finish() // Fecha a atividade se o objeto `Pet` não for recebido corretamente.
+            return
+        }
 
-        eventList.addAll(
-            listOf(
-                Event(petId = 1, eventType = "Veterinário", eventDate = "01/10/2024"),
-                Event(petId = 1, eventType = "Vacinação", eventDate = "15/09/2024")
-            )
-        )
+        loadEvents()
 
         setContent {
             EventListScreen()
         }
+    }
+
+    private fun loadEvents() {
+        val database = PetLifeDatabase(this)
+        eventList.clear()
+        eventList.addAll(database.getEventsByPetId(pet.id))
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -50,14 +77,22 @@ class EventListActivity : ComponentActivity() {
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(16.dp)
                     )
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(eventList.size) { index ->
-                            val event = eventList[index]
-                            EventItem(
-                                event = event,
-                                onEdit = { editEvent(event) },
-                                onDelete = { removeEvent(event) }
-                            )
+                    if (eventList.isEmpty()) {
+                        Text(
+                            text = "Nenhum evento encontrado.",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(eventList.size) { index ->
+                                val event = eventList[index]
+                                EventItem(
+                                    event = event,
+                                    onEdit = { editEvent(event) },
+                                    onDelete = { removeEvent(event) }
+                                )
+                            }
                         }
                     }
                     Button(
@@ -101,16 +136,18 @@ class EventListActivity : ComponentActivity() {
     private fun addEvent() {
         val intent = Intent(this, EditEventActivity::class.java)
         intent.putExtra("petId", pet.id)
-        startActivity(intent)
+        addEventLauncher.launch(intent)
     }
 
     private fun editEvent(event: Event) {
         val intent = Intent(this, EditEventActivity::class.java)
         intent.putExtra("event", event)
-        startActivity(intent)
+        editEventLauncher.launch(intent)
     }
 
     private fun removeEvent(event: Event) {
-        eventList.remove(event)
+        val database = PetLifeDatabase(this)
+        database.deleteEvent(event.id)
+        loadEvents()
     }
 }
