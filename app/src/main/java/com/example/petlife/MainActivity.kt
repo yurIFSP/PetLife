@@ -151,8 +151,8 @@ class MainActivity : ComponentActivity() {
             id = 0,
             name = "Novo Pet",
             birthDate = "01/01/2023",
-            type = "cão",
-            size = "pequeno",
+            type = "Cão",
+            size = "Pequeno",
             color = "Preto"
         )
         database.insertPet(newPet)

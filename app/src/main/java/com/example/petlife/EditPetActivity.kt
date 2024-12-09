@@ -8,8 +8,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -51,8 +52,8 @@ class EditPetActivity : ComponentActivity() {
         var updatedColor by remember { mutableStateOf(pet.color) }
         var updatedSize by remember { mutableStateOf(pet.size) }
 
-        val petTypes = listOf("cão", "gato")
-        val petSizes = listOf("pequeno", "médio", "grande")
+        val petTypes = listOf("Cão", "Gato")
+        val petSizes = listOf("Pequeno", "Médio", "Grande")
 
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Editar informações do Pet", style = MaterialTheme.typography.titleLarge)
@@ -86,7 +87,6 @@ class EditPetActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de Cor
             TextField(
                 value = updatedColor,
                 onValueChange = { updatedColor = it },
@@ -142,15 +142,21 @@ class EditPetActivity : ComponentActivity() {
     ) {
         var expanded by remember { mutableStateOf(false) }
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column {
             OutlinedTextField(
                 value = selectedOption,
                 onValueChange = {},
                 label = { Text(label) },
                 readOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = true }
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null
+                        )
+                    }
+                }
             )
 
             DropdownMenu(
