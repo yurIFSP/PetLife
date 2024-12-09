@@ -3,6 +3,7 @@ package com.example.petlife
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,12 +43,10 @@ class EventListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         pet = intent.getParcelableExtra("pet") ?: run {
-            finish() // Fecha a atividade se o objeto `Pet` não for recebido corretamente.
+            finish()
             return
         }
-
         loadEvents()
 
         setContent {
@@ -58,7 +57,9 @@ class EventListActivity : ComponentActivity() {
     private fun loadEvents() {
         val database = PetLifeDatabase(this)
         eventList.clear()
-        eventList.addAll(database.getEventsByPetId(pet.id))
+        val events = database.getEventsByPetId(pet.id)
+        eventList.addAll(events)
+        Log.d("EventListActivity", "Loaded ${events.size} events for pet_id=${pet.id}")
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -66,9 +67,7 @@ class EventListActivity : ComponentActivity() {
     fun EventListScreen() {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Eventos de ${pet.name}") }
-                )
+                TopAppBar(title = { Text("Eventos de ${pet.name}") })
             },
             content = { padding ->
                 Column(modifier = Modifier.padding(padding)) {
@@ -77,14 +76,16 @@ class EventListActivity : ComponentActivity() {
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(16.dp)
                     )
-                    if (eventList.isEmpty()) {
-                        Text(
-                            text = "Nenhum evento encontrado.",
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    } else {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.weight(1f)) { // Permite que a lista ocupe espaço proporcional
+                        if (eventList.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "Nenhum evento encontrado.",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        } else {
                             items(eventList.size) { index ->
                                 val event = eventList[index]
                                 EventItem(
@@ -97,7 +98,9 @@ class EventListActivity : ComponentActivity() {
                     }
                     Button(
                         onClick = { addEvent() },
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
                         Text("Adicionar Evento")
                     }
@@ -118,32 +121,28 @@ class EventListActivity : ComponentActivity() {
                 Text(text = "Categoria: ${event.eventCategory}", style = MaterialTheme.typography.bodyLarge)
                 Text(text = "Descrição: ${event.eventType}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Data: ${event.eventDate}", style = MaterialTheme.typography.bodyMedium)
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Button(onClick = onEdit) {
-                        Text("Editar")
-                    }
-                    Button(onClick = onDelete) {
-                        Text("Remover")
-                    }
+                    Button(onClick = onEdit) { Text("Editar") }
+                    Button(onClick = onDelete) { Text("Remover") }
                 }
             }
         }
     }
 
-
     private fun addEvent() {
-        val intent = Intent(this, EditEventActivity::class.java)
-        intent.putExtra("petId", pet.id)
+        val intent = Intent(this, EditEventActivity::class.java).apply {
+            putExtra("petId", pet.id)
+        }
         addEventLauncher.launch(intent)
     }
 
     private fun editEvent(event: Event) {
-        val intent = Intent(this, EditEventActivity::class.java)
-        intent.putExtra("event", event)
+        val intent = Intent(this, EditEventActivity::class.java).apply {
+            putExtra("event", event)
+        }
         editEventLauncher.launch(intent)
     }
 

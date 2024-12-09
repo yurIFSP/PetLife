@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
+        // Criação da tabela de pets
         db.execSQL(
             """
             CREATE TABLE pets (
@@ -26,10 +27,10 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
             """
             CREATE TABLE events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type TEXT NOT NULL,
-                date TEXT NOT NULL,
                 pet_id INTEGER NOT NULL,
                 eventCategory TEXT NOT NULL,
+                eventType TEXT NOT NULL,
+                eventDate TEXT NOT NULL,
                 FOREIGN KEY(pet_id) REFERENCES pets(id) ON DELETE CASCADE
             )
             """
@@ -44,22 +45,20 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     // ----------------------- Métodos para Pets -----------------------
 
-    // Insere um novo pet no banco
     fun insertPet(pet: Pet): Long {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("name", pet.name)
             put("birthDate", pet.birthDate)
             put("type", pet.type)
-            put("color", pet.color)
             put("size", pet.size)
+            put("color", pet.color)
         }
         val id = db.insert("pets", null, contentValues)
         db.close()
         return id
     }
 
-    // Retorna todos os pets cadastrados
     fun getAllPets(): List<Pet> {
         val petList = mutableListOf<Pet>()
         val db = readableDatabase
@@ -67,13 +66,15 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
         if (cursor.moveToFirst()) {
             do {
+                val petId = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val pet = Pet(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    id = petId,
                     name = cursor.getString(cursor.getColumnIndexOrThrow("name")),
                     birthDate = cursor.getString(cursor.getColumnIndexOrThrow("birthDate")),
                     type = cursor.getString(cursor.getColumnIndexOrThrow("type")),
                     size = cursor.getString(cursor.getColumnIndexOrThrow("size")),
-                    color = cursor.getString(cursor.getColumnIndexOrThrow("color")) // Incluindo "color"
+                    color = cursor.getString(cursor.getColumnIndexOrThrow("color")),
+                    events = getEventsByPetId(petId)
                 )
                 petList.add(pet)
             } while (cursor.moveToNext())
@@ -83,7 +84,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
         return petList
     }
 
-    // Atualiza os dados de um pet
     fun updatePet(pet: Pet): Boolean {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
@@ -99,7 +99,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
         return rowsAffected > 0
     }
 
-    // Remove um pet do banco
     fun deletePet(petId: Int): Boolean {
         val db = writableDatabase
         val rowsDeleted = db.delete("pets", "id = ?", arrayOf(petId.toString()))
@@ -109,21 +108,19 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     // ----------------------- Métodos para Eventos -----------------------
 
-    // Insere um novo evento
     fun insertEvent(event: Event): Long {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("pet_id", event.petId)
             put("eventCategory", event.eventCategory)
-            put("type", event.eventType)
-            put("date", event.eventDate)
+            put("eventType", event.eventType)
+            put("eventDate", event.eventDate)
         }
         val id = db.insert("events", null, contentValues)
         db.close()
         return id
     }
 
-    // Retorna todos os eventos relacionados a um pet
     fun getEventsByPetId(petId: Int): List<Event> {
         val eventList = mutableListOf<Event>()
         val db = readableDatabase
@@ -135,8 +132,8 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                     id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                     petId = cursor.getInt(cursor.getColumnIndexOrThrow("pet_id")),
                     eventCategory = cursor.getString(cursor.getColumnIndexOrThrow("eventCategory")),
-                    eventType = cursor.getString(cursor.getColumnIndexOrThrow("type")),
-                    eventDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                    eventType = cursor.getString(cursor.getColumnIndexOrThrow("eventType")),
+                    eventDate = cursor.getString(cursor.getColumnIndexOrThrow("eventDate"))
                 )
                 eventList.add(event)
             } while (cursor.moveToNext())
@@ -146,7 +143,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
         return eventList
     }
 
-    // Remove um evento
     fun deleteEvent(eventId: Int): Boolean {
         val db = writableDatabase
         val rowsDeleted = db.delete("events", "id = ?", arrayOf(eventId.toString()))
@@ -154,14 +150,13 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
         return rowsDeleted > 0
     }
 
-    // Atualiza os dados de um evento
     fun updateEvent(event: Event): Boolean {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("pet_id", event.petId)
             put("eventCategory", event.eventCategory)
-            put("type", event.eventType)
-            put("date", event.eventDate)
+            put("eventType", event.eventType)
+            put("eventDate", event.eventDate)
         }
         val rowsAffected = db.update("events", contentValues, "id = ?", arrayOf(event.id.toString()))
         db.close()
@@ -170,6 +165,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     companion object {
         const val DATABASE_NAME = "PetLife.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
     }
 }
