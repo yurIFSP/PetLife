@@ -6,35 +6,50 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
 
-    private var pet = Pet(
-        name = "Buddy",
-        birthDate = "01/01/2020",
-        type = "Cão",
-        color = "Marrom",
-        size = "Médio",
-        lastVetVisit = "02/08/2024",
-        lastVaccination = "15/07/2024",
-        lastPetShopVisit = "20/09/2024",
-        clinicPhone = "16998865982",
-        clinicWebsite = "https://www.petlove.com.br/"
+    private val petList = mutableStateListOf(
+        Pet(
+            name = "Buddy",
+            birthDate = "01/01/2020",
+            type = "Cão",
+            color = "Marrom",
+            size = "Médio",
+            lastVetVisit = "02/08/2024",
+            lastVaccination = "15/07/2024",
+            lastPetShopVisit = "20/09/2024",
+            clinicPhone = "16998865982",
+            clinicWebsite = "https://www.petlove.com.br/"
+        ),
+        Pet(
+            name = "Mimi",
+            birthDate = "15/05/2021",
+            type = "Gato",
+            color = "Cinza",
+            size = "Pequeno",
+            lastVetVisit = "10/06/2024",
+            lastVaccination = "25/05/2024",
+            lastPetShopVisit = "15/07/2024",
+            clinicPhone = "15988775432",
+            clinicWebsite = "https://www.petlove.com.br/"
+        )
     )
 
     private val editPetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val updatedPet = result.data?.getParcelableExtra<Pet>("updatedPet")
-            if (updatedPet != null) {
-                pet = updatedPet
-                setContent { PetDashboard(pet) }
+            val petIndex = petList.indexOfFirst { it.name == updatedPet?.name }
+            if (updatedPet != null && petIndex != -1) {
+                petList[petIndex] = updatedPet
             }
         }
     }
@@ -42,7 +57,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PetDashboard(pet)
+            PetDashboard()
         }
     }
 
@@ -60,32 +75,58 @@ class MainActivity : ComponentActivity() {
         startActivity(intent)
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun PetDashboard(pet: Pet) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = "Nome: ${pet.name}", style = MaterialTheme.typography.titleLarge)
-            Text(text = "Data de Nascimento: ${pet.birthDate}")
-            Text(text = "Tipo: ${pet.type}")
-            Text(text = "Cor: ${pet.color}")
-            Text(text = "Porte: ${pet.size}")
-            Text(text = "Última ida ao veterinário: ${pet.lastVetVisit}")
-            Text(text = "Última vacinação: ${pet.lastVaccination}")
-            Text(text = "Última ida ao petshop: ${pet.lastPetShopVisit}")
-            Text(text = "Telefone do Consultório: ${pet.clinicPhone}")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = { editPetData(pet) }) {
-                Text("Editar Dados")
+    fun PetDashboard() {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("PetLife") }
+                )
+            },
+            content = { padding ->
+                Column(modifier = Modifier.padding(padding)) {
+                    Text(
+                        text = "Lista de Pets",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(petList.size) { index ->
+                            val pet = petList[index]
+                            PetItem(
+                                pet = pet,
+                                onEdit = { editPetData(pet) },
+                                onDelete = { removePet(pet) }
+                            )
+                        }
+                    }
+                }
             }
+        )
+    }
 
-            Button(onClick = { dialClinic(pet.clinicPhone) }) {
-                Text("Ligar para Consultório")
-            }
+    @Composable
+    fun PetItem(pet: Pet, onEdit: () -> Unit, onDelete: () -> Unit, onSelect: () -> Unit) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable { onSelect() },
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Nome: ${pet.name}", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Tipo: ${pet.type}", style = MaterialTheme.typography.bodyMedium)
 
-            Text(text = "Site para Marcações de Consultas: ${pet.clinicWebsite}")
-            Button(onClick = { openClinicWebsite(pet.clinicWebsite) }) {
-                Text("Abrir Site")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Button(onClick = onEdit) {
+                        Text("Editar")
+                    }
+                    Button(onClick = onDelete) {
+                        Text("Remover")
+                    }
+                }
             }
         }
     }
@@ -95,6 +136,10 @@ class MainActivity : ComponentActivity() {
         intent.putExtra("pet", pet)
         editPetLauncher.launch(intent)
     }
+
+    private fun removePet(pet: Pet) {
+        petList.remove(pet)
+    }
+
+
 }
-
-

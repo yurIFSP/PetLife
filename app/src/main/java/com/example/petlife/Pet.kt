@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Pet(
+    val id: Int =0,
     val name: String,
     val birthDate: String,
     val type: String,
