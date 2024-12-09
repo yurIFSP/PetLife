@@ -97,7 +97,8 @@ class MainActivity : ComponentActivity() {
                             PetItem(
                                 pet = pet,
                                 onEdit = { editPetData(pet) },
-                                onDelete = { removePet(pet) }
+                                onDelete = { removePet(pet) },
+                                onSelect = { openEventList(pet) }
                             )
                         }
                     }

@@ -7,8 +7,35 @@ import android.database.sqlite.SQLiteOpenHelper
 class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE pets (id INTEGER PRIMARY KEY, name TEXT, type TEXT)")
-        db.execSQL("CREATE TABLE events (id INTEGER PRIMARY KEY, type TEXT, date TEXT, pet_id INTEGER, FOREIGN KEY(pet_id) REFERENCES pets(id))")
+        db.execSQL(
+            """
+            CREATE TABLE pets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                birthDate TEXT NOT NULL,
+                type TEXT NOT NULL,
+                color TEXT NOT NULL,
+                size TEXT NOT NULL,
+                lastVetVisit TEXT,
+                lastVaccination TEXT,
+                lastPetShopVisit TEXT,
+                clinicPhone TEXT,
+                clinicWebsite TEXT
+            )
+            """
+        )
+
+        db.execSQL(
+            """
+            CREATE TABLE events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                date TEXT NOT NULL,
+                pet_id INTEGER NOT NULL,
+                FOREIGN KEY(pet_id) REFERENCES pets(id) ON DELETE CASCADE
+            )
+            """
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
