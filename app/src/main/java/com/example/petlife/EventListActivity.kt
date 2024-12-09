@@ -115,7 +115,8 @@ class EventListActivity : ComponentActivity() {
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Tipo: ${event.eventType}", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Categoria: ${event.eventCategory}", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Descrição: ${event.eventType}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Data: ${event.eventDate}", style = MaterialTheme.typography.bodyMedium)
 
                 Row(
@@ -132,6 +133,7 @@ class EventListActivity : ComponentActivity() {
             }
         }
     }
+
 
     private fun addEvent() {
         val intent = Intent(this, EditEventActivity::class.java)

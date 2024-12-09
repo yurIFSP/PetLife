@@ -29,6 +29,7 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                 type TEXT NOT NULL,
                 date TEXT NOT NULL,
                 pet_id INTEGER NOT NULL,
+                eventCategory TEXT NOT NULL,
                 FOREIGN KEY(pet_id) REFERENCES pets(id) ON DELETE CASCADE
             )
             """
@@ -112,9 +113,10 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
     fun insertEvent(event: Event): Long {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
+            put("pet_id", event.petId)
+            put("eventCategory", event.eventCategory)
             put("type", event.eventType)
             put("date", event.eventDate)
-            put("pet_id", event.petId)
         }
         val id = db.insert("events", null, contentValues)
         db.close()
@@ -132,6 +134,7 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                 val event = Event(
                     id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
                     petId = cursor.getInt(cursor.getColumnIndexOrThrow("pet_id")),
+                    eventCategory = cursor.getString(cursor.getColumnIndexOrThrow("eventCategory")),
                     eventType = cursor.getString(cursor.getColumnIndexOrThrow("type")),
                     eventDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
                 )
@@ -155,9 +158,10 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
     fun updateEvent(event: Event): Boolean {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
+            put("pet_id", event.petId)
+            put("eventCategory", event.eventCategory)
             put("type", event.eventType)
             put("date", event.eventDate)
-            put("pet_id", event.petId)
         }
         val rowsAffected = db.update("events", contentValues, "id = ?", arrayOf(event.id.toString()))
         db.close()
@@ -166,6 +170,6 @@ class PetLifeDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     companion object {
         const val DATABASE_NAME = "PetLife.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
     }
 }

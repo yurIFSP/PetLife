@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 data class Event(
     val id: Int = 0,
     val petId: Int,
+    val eventCategory: String,
     val eventType: String,
     val eventDate: String
 ) : Parcelable
